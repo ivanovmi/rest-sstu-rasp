@@ -1,6 +1,6 @@
-require "json"
+require 'json'
 require 'mechanize'
-require "net/https"
+require 'net/https'
 require 'nokogiri'
 require 'unicode'
 
@@ -72,11 +72,13 @@ rasp.each do |div|
     answer[answer.index(i)] = i.strip
   end
   answer.delete_if(&:empty?)
-  answer.delete_if{|i| i.include?':' }
+  #answer.delete_if{|i| i.include?':' }
   answer.delete_at(0)
   a.push(answer)
 end
 
+# version with numbers
+=begin
 a[0..5].each do |list|
   dict = {}
   for i in [0, 2, 4, 6]
@@ -84,6 +86,17 @@ a[0..5].each do |list|
   end
   first_week[week[a.find_index(list)+1]] = dict
 end
+=end
+
+# version with time
+a[0..5].each do |list|
+  dict = {}
+  for i in [0, 4, 8, 12]
+    dict[(list[i+1]+list[i+2]).gsub(' ', '')] = get_pairs(list[i+3])
+  end
+  first_week[week[a.find_index(list)+1]] = dict
+end
+pp first_week
 
 if flag
   second_week['odd'] = false
@@ -93,8 +106,8 @@ end
 index = 0
 a[6..11].each do |list|
   dict = {}
-  for i in [0, 2, 4, 6]
-    dict[list[i]] = get_pairs(list[i+1])
+  for i in [0, 4, 8, 12]
+    dict[(list[i+1]+list[i+2]).gsub(' ', '')] = get_pairs(list[i+3])
   end
   second_week[week[index+1]] = dict
   index +=1
@@ -103,5 +116,12 @@ end
 response['first'] = first_week
 response['second'] = second_week
 
-pp response
+response.each do |w|
+  w[1].each do |d|
+    if d[1].is_a?Hash
+      d[1].delete_if { |k,v| v.empty?}
+    end
+  end
+end
 
+pp response
