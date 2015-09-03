@@ -3,6 +3,7 @@ require 'mechanize'
 require 'net/https'
 require 'nokogiri'
 require 'unicode'
+require 'json'
 
 class String
   def is_upper?
@@ -44,38 +45,39 @@ def get_pairs(string)
   end
 end
 
-response = Hash.new
-first_week = Hash.new
-second_week = Hash.new
-agent = Mechanize.new
-#group = gets.chomp
-group = 'б1-ИВЧТ41'
-page = agent.get('http://rasp.sstu.ru/')
-page = agent.page.link_with(:text => group).click
-html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
-rasp = html.css('div.text-center')[0]
+def main(group)
+  response = Hash.new
+  first_week = Hash.new
+  second_week = Hash.new
+  agent = Mechanize.new
+  #group = gets.chomp
+  #group = 'б1-ИВЧТ41'
+  page = agent.get('http://rasp.sstu.ru/')
+  page = agent.page.link_with(:text => group).click
+  html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
+  rasp = html.css('div.text-center')[0]
 
-week = {1 => 'monday', 2 => 'tuesday', 3 => 'wednesday', 4 => 'thursday', 5 => 'friday', 6 => 'saturday'}
+  week = {1 => 'monday', 2 => 'tuesday', 3 => 'wednesday', 4 => 'thursday', 5 => 'friday', 6 => 'saturday'}
 
-if rasp.content.split("\r\n")[1].strip.split(' ')[0] == 'Нечётная'
-  first_week['odd'] = true
-  flag = true
-else
-  first_week['odd'] = false
-  flag = false
-end
-rasp = html.css('div.rasp-table-col')
-a = []
-rasp.each do |div|
-  answer = div.content.split("\r\n")
-  answer.each do |i|
-    answer[answer.index(i)] = i.strip
+  if rasp.content.split("\r\n")[1].strip.split(' ')[0] == 'Нечётная'
+    first_week['odd'] = true
+    flag = true
+  else
+    first_week['odd'] = false
+    flag = false
   end
-  answer.delete_if(&:empty?)
-  #answer.delete_if{|i| i.include?':' }
-  answer.delete_at(0)
-  a.push(answer)
-end
+  rasp = html.css('div.rasp-table-col')
+  a = []
+  rasp.each do |div|
+    answer = div.content.split("\r\n")
+    answer.each do |i|
+      answer[answer.index(i)] = i.strip
+    end
+    answer.delete_if(&:empty?)
+    #answer.delete_if{|i| i.include?':' }
+    answer.delete_at(0)
+    a.push(answer)
+  end
 
 # version with numbers
 =begin
@@ -89,39 +91,43 @@ end
 =end
 
 # version with time
-a[0..5].each do |list|
-  dict = {}
-  for i in [0, 4, 8, 12]
-    dict[(list[i+1]+list[i+2]).gsub(' ', '')] = get_pairs(list[i+3])
+  a[0..5].each do |list|
+    dict = {}
+    for i in [0, 4, 8, 12]
+      dict[(list[i+1]+list[i+2]).gsub(' ', '')] = get_pairs(list[i+3])
+    end
+    first_week[week[a.find_index(list)+1]] = dict
   end
-  first_week[week[a.find_index(list)+1]] = dict
-end
-pp first_week
+  pp first_week
 
-if flag
-  second_week['odd'] = false
-else
-  second_week['odd'] = true
-end
-index = 0
-a[6..11].each do |list|
-  dict = {}
-  for i in [0, 4, 8, 12]
-    dict[(list[i+1]+list[i+2]).gsub(' ', '')] = get_pairs(list[i+3])
+  if flag
+    second_week['odd'] = false
+  else
+    second_week['odd'] = true
   end
-  second_week[week[index+1]] = dict
-  index +=1
-end
+  index = 0
+  a[6..11].each do |list|
+    dict = {}
+    for i in [0, 4, 8, 12]
+      dict[(list[i+1]+list[i+2]).gsub(' ', '')] = get_pairs(list[i+3])
+    end
+    second_week[week[index+1]] = dict
+    index +=1
+  end
 
-response['first'] = first_week
-response['second'] = second_week
+  response['first'] = first_week
+  response['second'] = second_week
 
-response.each do |w|
-  w[1].each do |d|
-    if d[1].is_a?Hash
-      d[1].delete_if { |k,v| v.empty?}
+  response.each do |w|
+    w[1].each do |d|
+      if d[1].is_a?Hash
+        d[1].delete_if { |k,v| v.empty?}
+      end
     end
   end
+
+  hash = JSON["#{response.to_json}"]
+  JSON.pretty_generate(hash)
 end
 
-pp response
+main("б1-ИВЧТ41")
