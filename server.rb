@@ -3,32 +3,21 @@ require_relative 'parser.rb'
 require 'json'
 require 'pp'
 
-get '/hi' do
-  "Hello World!"
+get '/hi=:name' do |name|
+  "Hello #{name}!"
 end
 
-get '/group=:group' do |n|
-  # matches "GET /hello/foo" and "GET /hello/bar"
-  # params['name'] is 'foo' or 'bar'
-  # n stores params['name']
-  #JSON.pretty_generate(hash)
-  Parser.new.main(n, group=true, teacher=false, kafedra=false)
+get '/group=:group' do |group_name|
+  Parser.new.main(group_name, group=true, teacher=false, kafedra=false)
 end
 
-get '/teacher=:teacher' do |m|
-  # matches "GET /hello/foo" and "GET /hello/bar"
-  # params['name'] is 'foo' or 'bar'
-  # n stores params['name']
-  #JSON.pretty_generate(hash) puts n
-  n = m.split('+').join(' ')
-  pp n
-  pp n.is_a?String
-  pp n.nil?
+get '/teacher=:teacher' do |teacher_name|
+  n = teacher_name.split('+').join(' ')
   pars = Parser.new
-  pars.main("Чугунов АВ", group=false, teacher=true, kafedra=false)
+  pars.main(n, group=false, teacher=true, kafedra=false)
 end
 
-get '/kafedra=:kafedra' do |n|
+get '/aud=:aud' do |aud|
   # matches "GET /hello/foo" and "GET /hello/bar"
   # params['name'] is 'foo' or 'bar'
   # n stores params['name']

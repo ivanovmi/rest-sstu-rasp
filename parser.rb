@@ -124,7 +124,17 @@ class Parser
     teacher = name
     pp teacher.is_a?String
     pp teacher.nil?
-    page = agent.page.link_with(:text => "Чугунов АВ").click
+    teacher = teacher.split('')
+    fio = []
+    io = teacher[-2..-1]
+    teacher.delete_at(-3)
+    teacher.delete_at(-2)
+    teacher.delete_at(-1)
+    f = teacher.join('')
+    fio.push(f)
+    fio.push(io.join(''))
+    teacher = fio.join(' ')
+    page = agent.page.link_with(:text => teacher).click
     response = rasp_pars(page)
     response
   end
@@ -154,7 +164,7 @@ class Parser
   end
 end
 
-#m = "Чугунов АВ"
+#m = "Чугунов АВ"
 #pars = Parser.new
 #puts pars.main(m.to_s, group=false, teacher=true, kafedra=false)
 
