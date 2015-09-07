@@ -122,14 +122,10 @@ class Parser
 
   def teacher_pars(agent, page, name)
     teacher = name
-    pp teacher.is_a?String
-    pp teacher.nil?
     teacher = teacher.split('')
     fio = []
     io = teacher[-2..-1]
-    teacher.delete_at(-3)
-    teacher.delete_at(-2)
-    teacher.delete_at(-1)
+    teacher.slice!(-3..-1)
     f = teacher.join('')
     fio.push(f)
     fio.push(io.join(''))
@@ -140,13 +136,47 @@ class Parser
   end
 
   def aud_pars(agent, page, name)
-    aud = name
-    page = agent.page.link_with(:text => aud).click
+    data = name.split('/')
+    aud_lists = []
+    headers_list = []
+    body_list = []
+    aud_dict = {}
+    #page = agent.page.link_with(:text => aud).click
+    html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
+    panels = html.css('div.panel')
+    headers = panels.css('div.panel-heading')
+    headers.each{|header| headers_list.push(header)}
+    aud_lists.push(headers_list)
+    bodys = panels.css('div.panel-body')
+    h = {}
+    bodys.xpath('//a[@href]').each do |link|
+      h[link.text.strip] = link['href']
+    end
+    puts h
+    bodys.each do |body|
+      pp body.xpath('//a[@href]')
+    end
+    pp body_list
+    aud_lists.push(body_list)
+    i = 0
+    while i < 12
+      aud_dict[headers_list[i]] = body_list[i]
+      i+=1
+    end
+
+    aud_dict.each do |k,v|
+      if k.content.split(' ')[0].strip! == data[0]
+        #s = v.css('div.col-kaf')
+        #operat =
+        puts
+      end
+    end
+
     response = rasp_pars(page)
     response
   end
 
-  def main(name, group=false, teacher=false, kafedra=false)
+  def main(name, group=false, teacher=false, auditory=false)
     agent = Mechanize.new
     if group
       page = agent.get('http://rasp.sstu.ru/')
@@ -154,7 +184,7 @@ class Parser
     elsif teacher
       page = agent.get('http://rasp.sstu.ru/teacher')
       response = teacher_pars(agent, page, name)
-    elsif aud
+    elsif auditory
       page = agent.get('http://rasp.sstu.ru/aud')
       response = aud_pars(agent, page, name)
     end
@@ -164,7 +194,7 @@ class Parser
   end
 end
 
-#m = "Чугунов АВ"
-#pars = Parser.new
-#puts pars.main(m.to_s, group=false, teacher=true, kafedra=false)
+m = "1/411"
+pars = Parser.new
+puts pars.main(m.to_s, group=false, teacher=false, kafedra=true)
 
