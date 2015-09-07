@@ -22,7 +22,7 @@ get '/aud=:aud' do |aud|
   # params['name'] is 'foo' or 'bar'
   # n stores params['name']
   #JSON.pretty_generate(hash)
-  Parser.new.main(aud, group=false, teacher=false, auditory=true)
+  Parser.new.main(aud.to_s.split('+').join('/'), group=false, teacher=false, auditory=true)
 end
 
 get '/example.json' do

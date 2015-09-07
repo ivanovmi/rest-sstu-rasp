@@ -16,37 +16,58 @@ class String
 end
 
 class Parser
-  def get_pairs(string)
+  def get_pairs(string, is_aud=false)
     dict = {}
 
     if string.nil? or string.length == 1
       dict
     else
-      dict['lector'] = string.split(')')[1]
-      subj_room = string.split(')')[0]<<')'
-      room = subj_room[0..4]
-      subj_room[0..4] = ''
-      subj = subj_room
-      false_check = 0
-      subj.split('')[0..3].each do |i|
-        if i.is_lower?
-          false_check += 1
+      if not is_aud
+        dict['lector'] = string.split(')')[1]
+        subj_room = string.split(')')[0]<<')'
+        room = subj_room[0..4]
+        subj_room[0..4] = ''
+        subj = subj_room
+        false_check = 0
+        subj.split('')[0..3].each do |i|
+          if i.is_lower?
+            false_check += 1
+          end
         end
+        if false_check == 2
+          room << subj[0]
+          subj[0] = ''
+        elsif false_check == 3 and subj[0].is_lower?
+          room << subj[0]
+          subj[0] = ''
+        end
+        dict['subject'] = subj
+        dict['room'] = room
+      else
+        dict['subject'] = string.split(')')[0]<<')'
+        lector_group = string.split(')')[1]
+        group = lector_group.split('-')[1].insert(0,'-')
+        string[string.length-group.length..-1] = ''
+        rev_string = string.split('').reverse
+        a = 0
+        rev_string.each do |i|
+          if i.is_upper?
+            a = rev_string.find_index(i)+1
+            break
+          end
+        end
+        group.insert(0, rev_string[0..a].join('').reverse)
+        rev_string[0..a] = ''
+        lector = rev_string.join('').reverse
+        lector[0..dict['subject'].length-1] = ''
+        dict['group'] = group
+        dict['lector'] = lector
       end
-      if false_check == 2
-        room << subj[0]
-        subj[0] = ''
-      elsif false_check == 3 and subj[0].is_lower?
-        room << subj[0]
-        subj[0] = ''
-      end
-      dict['subject'] = subj
-      dict['room'] = room
       dict
     end
   end
 
-  def rasp_pars(page)
+  def rasp_pars(page, is_aud=false)
     response = Hash.new
     first_week = Hash.new
     second_week = Hash.new
@@ -80,7 +101,7 @@ class Parser
     a[0..5].each do |list|
       dict = {}
       for i in [0, 2, 4, 6]
-        dict[list[i]] = get_pairs(list[i+1])
+        dict[list[i]] = get_pairs(list[i+1], is_aud)
       end
       first_week[week[a.find_index(list)+1]] = dict
     end
@@ -94,7 +115,7 @@ class Parser
     a[6..11].each do |list|
       dict = {}
       for i in [0, 2, 4, 6]
-        dict[list[i]] = get_pairs(list[i+1])
+        dict[list[i]] = get_pairs(list[i+1], is_aud)
       end
       second_week[week[index+1]] = dict
       index +=1
@@ -141,22 +162,22 @@ class Parser
     headers_list = []
     body_list = []
     aud_dict = {}
-    #page = agent.page.link_with(:text => aud).click
+
     html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
     panels = html.css('div.panel')
     headers = panels.css('div.panel-heading')
-    headers.each{|header| headers_list.push(header)}
+    headers.each{|header| headers_list.push(header.text.strip)}
     aud_lists.push(headers_list)
     bodys = panels.css('div.panel-body')
-    h = {}
-    bodys.xpath('//a[@href]').each do |link|
-      h[link.text.strip] = link['href']
-    end
-    puts h
+
     bodys.each do |body|
-      pp body.xpath('//a[@href]')
-    end
-    pp body_list
+      h = {}
+      body.css('a[href]').each do |l|
+        h[l.text] = l['href']
+      end
+      body_list.push(h)
+      end
+
     aud_lists.push(body_list)
     i = 0
     while i < 12
@@ -165,14 +186,16 @@ class Parser
     end
 
     aud_dict.each do |k,v|
-      if k.content.split(' ')[0].strip! == data[0]
-        #s = v.css('div.col-kaf')
-        #operat =
-        puts
+      if k.split(' ')[0] == data[0]
+        v.each do |a|
+          if a[0] == data[1]
+            page = agent.get('http://rasp.sstu.ru'+a[1])
+          end
+        end
       end
     end
 
-    response = rasp_pars(page)
+    response = rasp_pars(page, is_aud=true)
     response
   end
 
@@ -194,7 +217,8 @@ class Parser
   end
 end
 
-m = "1/411"
+m = "2+019А"
+#m = 'б1-ИВЧТ41'
 pars = Parser.new
-puts pars.main(m.to_s, group=false, teacher=false, kafedra=true)
-
+#pars.main(m.to_s, group=false, teacher=false, kafedra=true)
+puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
