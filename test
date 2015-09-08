@@ -1,2 +1,7 @@
-m = "2+019А"
-puts m == '2+019А'
+require 'mechanize'
+
+agent = Mechanize.new
+page = agent.get('http://rasp.sstu.ru/aud/138')
+html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
+rasp = html.css('div.text-center')[0]
+puts rasp

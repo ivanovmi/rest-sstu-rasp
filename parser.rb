@@ -45,9 +45,11 @@ class Parser
         dict['room'] = room
       else
         dict['subject'] = string.split(')')[0]<<')'
-        lector_group = string.split(')')[1]
+        lector_group = string.split(')').length == 2 ? string.split(')')[1] : string.split(')')[1..string.length-1].join(')')
         group = lector_group.split('-')[1].insert(0,'-')
         string[string.length-group.length..-1] = ''
+        pp lector_group
+        pp string
         rev_string = string.split('').reverse
         a = 0
         rev_string.each do |i|
@@ -56,7 +58,11 @@ class Parser
             break
           end
         end
-        group.insert(0, rev_string[0..a].join('').reverse)
+        if rev_string[a].is_lower?
+          group.insert(0, rev_string[0..a].join('').reverse)
+        else
+          #pp rev_string[a], rev_string[a+1]
+        end
         rev_string[0..a] = ''
         lector = rev_string.join('').reverse
         lector[0..dict['subject'].length-1] = ''
@@ -73,7 +79,6 @@ class Parser
     second_week = Hash.new
     a = []
     week = {1 => 'monday', 2 => 'tuesday', 3 => 'wednesday', 4 => 'thursday', 5 => 'friday', 6 => 'saturday'}
-
     html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
     rasp = html.css('div.text-center')[0]
 
@@ -86,7 +91,6 @@ class Parser
     end
 
     rasp = html.css('div.rasp-table-col')
-
     rasp.each do |div|
       answer = div.content.split("\r\n")
       answer.each do |i|
@@ -197,6 +201,7 @@ class Parser
 
     response = rasp_pars(page, is_aud=true)
     response
+    pp response['first']['thursday']
   end
 
   def main(name, group=false, teacher=false, auditory=false)
@@ -212,13 +217,13 @@ class Parser
       response = aud_pars(agent, page, name)
     end
     #page = agent.page.link_with(:text => group).click
-    hash = JSON["#{response.to_json}"]
-    JSON.pretty_generate(hash)
+    #hash = JSON["#{response.to_json}"]
+    #JSON.pretty_generate(hash)
   end
 end
 
-m = "2+019А"
+m = "1+411"
 #m = 'б1-ИВЧТ41'
 pars = Parser.new
-#pars.main(m.to_s, group=false, teacher=false, kafedra=true)
-puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
+pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
+#puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
