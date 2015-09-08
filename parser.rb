@@ -202,7 +202,7 @@ class Parser
     response
   end
 
-  def main(name, group=false, teacher=false, auditory=false)
+  def main(name, group=false, teacher=false, auditory=false, kaf=false)
     agent = Mechanize.new
     if group
       page = agent.get('http://rasp.sstu.ru/')
@@ -213,6 +213,29 @@ class Parser
     elsif auditory
       page = agent.get('http://rasp.sstu.ru/aud')
       response = aud_pars(agent, page, name)
+    elsif kaf
+      teachers_list = []
+      page = agent.get('http://rasp.sstu.ru/kafedra')
+      page = agent.page.link_with(:text => name).click
+      html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
+      teachers_panels = html.css('div.panel-title-teacher')
+      teachers_panels.each do |panel|
+        teachers_list.push(panel.content.strip)
+      end
+      panels = html.css('div.panel-body')
+      panels_list = []
+      panels.each do |panel|
+        a = panel.content.split("\r\n")
+        b=[]
+        a.each do |i|
+          b.push(i.strip)
+        end
+        b = b.reject {|c| c.empty?}
+        b.slice!(1..5)
+        b.slice!(b.index('Нечётная')+1..b.index('Нечётная')+5)
+        panels_list.push(b)
+      end
+      pp panels_list
     end
     #page = agent.page.link_with(:text => group).click
     hash = JSON["#{response.to_json}"]
@@ -220,8 +243,8 @@ class Parser
   end
 end
 
-m = "1+411"
+m = "ИСТ"
 #m = 'б1-ИВЧТ41'
 pars = Parser.new
 #pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
-puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
+puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)

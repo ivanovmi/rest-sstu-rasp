@@ -8,13 +8,13 @@ get '/hi=:name' do |name|
 end
 
 get '/group=:group' do |group_name|
-  Parser.new.main(group_name, group=true, teacher=false, kafedra=false)
+  Parser.new.main(group_name, group=true, teacher=false, auditory=false, kaf=false)
 end
 
 get '/teacher=:teacher' do |teacher_name|
   n = teacher_name.split('+').join(' ')
   pars = Parser.new
-  pars.main(n, group=false, teacher=true, kafedra=false)
+  pars.main(n, group=false, teacher=true, auditory=false, kaf=false)
 end
 
 get '/aud=:aud' do |aud|
@@ -22,7 +22,7 @@ get '/aud=:aud' do |aud|
   # params['name'] is 'foo' or 'bar'
   # n stores params['name']
   #JSON.pretty_generate(hash)
-  Parser.new.main(aud.to_s.split('+').join('/'), group=false, teacher=false, auditory=true)
+  Parser.new.main(aud.to_s.split('+').join('/'), group=false, teacher=false, auditory=true, kaf=false)
 end
 
 get '/example.json' do
