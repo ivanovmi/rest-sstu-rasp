@@ -48,8 +48,6 @@ class Parser
         lector_group = string.split(')').length == 2 ? string.split(')')[1] : string.split(')')[1..string.length-1].join(')')
         group = lector_group.split('-')[1].insert(0,'-')
         string[string.length-group.length..-1] = ''
-        pp lector_group
-        pp string
         rev_string = string.split('').reverse
         a = 0
         rev_string.each do |i|
@@ -60,10 +58,11 @@ class Parser
         end
         if rev_string[a].is_lower?
           group.insert(0, rev_string[0..a].join('').reverse)
+          rev_string[0..a] = ''
         else
-          #pp rev_string[a], rev_string[a+1]
+          group.insert(0,rev_string[0])
+          rev_string[0] = ''
         end
-        rev_string[0..a] = ''
         lector = rev_string.join('').reverse
         lector[0..dict['subject'].length-1] = ''
         dict['group'] = group
@@ -201,7 +200,6 @@ class Parser
 
     response = rasp_pars(page, is_aud=true)
     response
-    pp response['first']['thursday']
   end
 
   def main(name, group=false, teacher=false, auditory=false)
@@ -217,13 +215,13 @@ class Parser
       response = aud_pars(agent, page, name)
     end
     #page = agent.page.link_with(:text => group).click
-    #hash = JSON["#{response.to_json}"]
-    #JSON.pretty_generate(hash)
+    hash = JSON["#{response.to_json}"]
+    JSON.pretty_generate(hash)
   end
 end
 
 m = "1+411"
 #m = 'б1-ИВЧТ41'
 pars = Parser.new
-pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
-#puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
+#pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
+puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
