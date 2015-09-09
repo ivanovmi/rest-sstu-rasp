@@ -43,7 +43,7 @@ class Parser_kafed < Parser
     end
   end
 
-  def main(name)
+  def main(name, teacher_name=nil)
     agent=Mechanize.new
     dict={}
     teachers_list = []
@@ -77,11 +77,16 @@ class Parser_kafed < Parser
       dict[k] = parser(v)
     end
 
-
-    pp dict
+    if teacher_name
+      hash = JSON["#{dict[teacher_name.split('+').join(' ')].to_json}"]
+      JSON.pretty_generate(hash)
+    else
+      hash = JSON["#{dict.to_json}"]
+      JSON.pretty_generate(hash)
+    end
   end
 end
 
-pars = Parser_kafed.new
-pars.main('ИСТ')
-#puts pars.main('1+411'.split('+').join('/'), group=false, teacher=false, auditory=true)
+#pars = Parser_kafed.new
+#pars.main('РКД')
+#puts pars.main('РКД', 'Акатова+ОИ')

@@ -4,7 +4,7 @@ require 'net/https'
 require 'nokogiri'
 require 'unicode'
 require 'json'
-
+#require_relative 'parser_kafed'
 class String
   def is_upper?
     self == Unicode::upcase(self)
@@ -213,11 +213,11 @@ class Parser
     elsif auditory
       page = agent.get('http://rasp.sstu.ru/aud')
       response = aud_pars(agent, page, name)
-    elsif kaf
-
+    #elsif kaf
+    #  response = Parser_kafed.new.main(name)
     end
-    #hash = JSON["#{response.to_json}"]
-    #JSON.pretty_generate(hash)
+    hash = JSON["#{response.to_json}"]
+    JSON.pretty_generate(hash)
   end
 end
 

@@ -1,5 +1,6 @@
 require 'sinatra'
 require_relative 'parser.rb'
+require_relative 'parser_kafed'
 require 'json'
 require 'pp'
 
@@ -23,6 +24,15 @@ get '/aud=:aud' do |aud|
   # n stores params['name']
   #JSON.pretty_generate(hash)
   Parser.new.main(aud.to_s.split('+').join('/'), group=false, teacher=false, auditory=true, kaf=false)
+end
+
+get '/kafedra=:kafedra' do |kafedra_name|
+  Parser_kafed.new.main(kafedra_name)
+end
+
+get '/kafedra=:kafedra/teacher=:teacher' do |kafedra_name, teacher_name|
+  pp kafedra_name, teacher_name
+  Parser_kafed.new.main(kafedra_name, teacher_name)
 end
 
 get '/example.json' do
