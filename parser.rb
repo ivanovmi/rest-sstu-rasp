@@ -214,6 +214,7 @@ class Parser
       page = agent.get('http://rasp.sstu.ru/aud')
       response = aud_pars(agent, page, name)
     elsif kaf
+      dict={}
       teachers_list = []
       page = agent.get('http://rasp.sstu.ru/kafedra')
       page = agent.page.link_with(:text => name).click
@@ -231,20 +232,24 @@ class Parser
           b.push(i.strip)
         end
         b = b.reject {|c| c.empty?}
-        b.slice!(1..5)
+        b.slice!(b.index('Чётная')+1..b.index('Чётная')+5)
         b.slice!(b.index('Нечётная')+1..b.index('Нечётная')+5)
         panels_list.push(b)
       end
-      pp panels_list
+      i = 0
+      while i < teachers_list.length
+        dict[teachers_list[i]] = panels_list[i]
+        i += 1
+      end
+      pp dict
     end
-    #page = agent.page.link_with(:text => group).click
-    hash = JSON["#{response.to_json}"]
-    JSON.pretty_generate(hash)
+    #hash = JSON["#{response.to_json}"]
+    #JSON.pretty_generate(hash)
   end
 end
 
 m = "ИСТ"
 #m = 'б1-ИВЧТ41'
 pars = Parser.new
-#pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, kafedra=true)
-puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
+pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
+#puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
