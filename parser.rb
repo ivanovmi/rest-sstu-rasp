@@ -214,42 +214,15 @@ class Parser
       page = agent.get('http://rasp.sstu.ru/aud')
       response = aud_pars(agent, page, name)
     elsif kaf
-      dict={}
-      teachers_list = []
-      page = agent.get('http://rasp.sstu.ru/kafedra')
-      page = agent.page.link_with(:text => name).click
-      html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
-      teachers_panels = html.css('div.panel-title-teacher')
-      teachers_panels.each do |panel|
-        teachers_list.push(panel.content.strip)
-      end
-      panels = html.css('div.panel-body')
-      panels_list = []
-      panels.each do |panel|
-        a = panel.content.split("\r\n")
-        b=[]
-        a.each do |i|
-          b.push(i.strip)
-        end
-        b = b.reject {|c| c.empty?}
-        b.slice!(b.index('Чётная')+1..b.index('Чётная')+5)
-        b.slice!(b.index('Нечётная')+1..b.index('Нечётная')+5)
-        panels_list.push(b)
-      end
-      i = 0
-      while i < teachers_list.length
-        dict[teachers_list[i]] = panels_list[i]
-        i += 1
-      end
-      pp dict
+
     end
     #hash = JSON["#{response.to_json}"]
     #JSON.pretty_generate(hash)
   end
 end
 
-m = "ИСТ"
+#m = "ИСТ"
 #m = 'б1-ИВЧТ41'
-pars = Parser.new
-pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
+#pars = Parser.new
+#pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
 #puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
