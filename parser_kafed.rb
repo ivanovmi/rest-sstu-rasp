@@ -3,6 +3,46 @@ require 'nokogiri'
 require 'mechanize'
 
 class Parser_kafed < Parser
+  def parser(a)
+    dict = {}
+    odd = a.index('Нечётная')
+    non_odd = a.index('Чётная')
+
+    if odd > non_odd
+      non_odd_week=a[1..odd-1]
+      odd_week=a[odd+1..a.length-1]
+    elsif non_odd > odd
+      odd_week=a[1..non_odd-1]
+      non_odd_week=a[non_odd+1..a.length-1]
+    end
+
+    dict['odd']=odd_week
+    dict['non_odd']=non_odd_week
+    week = {'Пн' => 'monday', 'Вт' => 'tuesday', 'Ср' => 'wednesday', 'Чт' => 'thursday', 'Пт' => 'friday', 'Сб' => 'saturday'}
+    dict.each do |k,v|
+      с = 0
+      z = []
+      m = {}
+      l = {}
+      while с < v.length
+        if v[с].length==7 and v[с].include?'.'
+          m[week[v[с][0..1]]] = z
+        else
+          z.push(v[с])
+        end
+        с += 1
+      end
+      m.each do |ke ,el|
+        j=0
+        while j < el.length
+          l[el[j]] = {'room' => el[j+1], 'group' => el[j+2], 'subject' => el[j+3]}
+          j+=4
+        end
+      end
+      dict[k] = l
+    end
+  end
+
   def main(name)
     agent=Mechanize.new
     dict={}
@@ -34,9 +74,11 @@ class Parser_kafed < Parser
     end
 
     dict.each do |k, v|
-      pp v, '================================'
+      dict[k] = parser(v)
     end
 
+
+    pp dict
   end
 end
 
