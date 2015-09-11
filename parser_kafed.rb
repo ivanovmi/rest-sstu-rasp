@@ -81,12 +81,9 @@ class Parser_kafed < Parser
       hash = JSON["#{dict[teacher_name.split('+').join(' ')].to_json}"]
       JSON.pretty_generate(hash)
     else
-      hash = JSON["#{dict.to_json}"]
-      JSON.pretty_generate(hash)
+      #hash = JSON["#{dict.to_json}"]
+      #JSON.pretty_generate(hash)
+      dict
     end
   end
 end
-
-#pars = Parser_kafed.new
-#pars.main('РКД')
-#puts pars.main('РКД', 'Акатова+ОИ')

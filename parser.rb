@@ -4,7 +4,7 @@ require 'net/https'
 require 'nokogiri'
 require 'unicode'
 require 'json'
-#require_relative 'parser_kafed'
+
 class String
   def is_upper?
     self == Unicode::upcase(self)
@@ -16,13 +16,13 @@ class String
 end
 
 class Parser
-  def get_pairs(string, is_aud=false)
+  def get_pairs(string, is_room=false)
     dict = {}
 
     if string.nil? or string.length == 1
       dict
     else
-      if not is_aud
+      if not is_room
         dict['lector'] = string.split(')')[1]
         subj_room = string.split(')')[0]<<')'
         room = subj_room[0..4]
@@ -144,33 +144,33 @@ class Parser
     response
   end
 
-  def teacher_pars(agent, page, name)
-    teacher = name
-    teacher = teacher.split('')
+  def lector_pars(agent, page, name)
+    lector = name
+    lector = lector.split('')
     fio = []
-    io = teacher[-2..-1]
-    teacher.slice!(-3..-1)
-    f = teacher.join('')
+    io = lector[-2..-1]
+    lector.slice!(-3..-1)
+    f = lector.join('')
     fio.push(f)
     fio.push(io.join(''))
-    teacher = fio.join(' ')
-    page = agent.page.link_with(:text => teacher).click
+    lector = fio.join(' ')
+    page = agent.page.link_with(:text => lector).click
     response = rasp_pars(page)
     response
   end
 
-  def aud_pars(agent, page, name)
+  def room_pars(agent, page, name)
     data = name.split('/')
-    aud_lists = []
+    room_lists = []
     headers_list = []
     body_list = []
-    aud_dict = {}
+    room_dict = {}
 
     html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
     panels = html.css('div.panel')
     headers = panels.css('div.panel-heading')
     headers.each{|header| headers_list.push(header.text.strip)}
-    aud_lists.push(headers_list)
+    room_lists.push(headers_list)
     bodys = panels.css('div.panel-body')
 
     bodys.each do |body|
@@ -181,14 +181,14 @@ class Parser
       body_list.push(h)
       end
 
-    aud_lists.push(body_list)
+    room_lists.push(body_list)
     i = 0
     while i < 12
-      aud_dict[headers_list[i]] = body_list[i]
+      room_dict[headers_list[i]] = body_list[i]
       i+=1
     end
 
-    aud_dict.each do |k,v|
+    room_dict.each do |k,v|
       if k.split(' ')[0] == data[0]
         v.each do |a|
           if a[0] == data[1]
@@ -202,27 +202,21 @@ class Parser
     response
   end
 
-  def main(name, group=false, teacher=false, auditory=false, kaf=false)
+  def main(name, group=false, lector=false, auditory=false, kafedra=false)
     agent = Mechanize.new
     if group
       page = agent.get('http://rasp.sstu.ru/')
       response = group_pars(agent, page, name)
-    elsif teacher
+    elsif lector
       page = agent.get('http://rasp.sstu.ru/teacher')
-      response = teacher_pars(agent, page, name)
+      response = lector_pars(agent, page, name)
     elsif auditory
       page = agent.get('http://rasp.sstu.ru/aud')
-      response = aud_pars(agent, page, name)
-    #elsif kaf
+      response = room_pars(agent, page, name)
+    #elsif kafedra
     #  response = Parser_kafed.new.main(name)
     end
     hash = JSON["#{response.to_json}"]
     JSON.pretty_generate(hash)
   end
 end
-
-#m = "ИСТ"
-#m = 'б1-ИВЧТ41'
-#pars = Parser.new
-#pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
-#puts pars.main(m.to_s.split('+').join('/'), group=false, teacher=false, auditory=false, kaf=true)
