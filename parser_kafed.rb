@@ -5,6 +5,8 @@ require 'mechanize'
 class Parser_kafed < Parser
   def parser(a)
     dict = {}
+    odd_week = nil
+    non_odd_week = nil
     odd = a.index('Нечётная')
     non_odd = a.index('Чётная')
 
@@ -16,30 +18,31 @@ class Parser_kafed < Parser
       non_odd_week=a[non_odd+1..a.length-1]
     end
 
-    dict['odd']=odd_week
-    dict['non_odd']=non_odd_week
-    week = {'Пн' => 'monday', 'Вт' => 'tuesday', 'Ср' => 'wednesday', 'Чт' => 'thursday', 'Пт' => 'friday', 'Сб' => 'saturday'}
+    dict[:odd]=odd_week
+    dict[:non_odd]=non_odd_week
+    week = {:Пн => 'monday', :Вт => 'tuesday', :Ср => 'wednesday', :Чт => 'thursday', :Пт => 'friday', :Сб => 'saturday'}
     dict.each do |k,v|
-      с = 0
-      z = []
-      m = {}
-      l = {}
-      while с < v.length
-        if v[с].length==7 and v[с].include?'.'
-          m[week[v[с][0..1]]] = z
+      iter = 0
+      storage = []
+      reservoir = {}
+      tmp_storage = {}
+      while iter < v.length
+        if v[iter].length==7 and v[iter].include?'.'
+          reservoir[week[v[iter][0..1].to_sym]] = storage
         else
-          z.push(v[с])
+          storage.push(v[iter])
         end
-        с += 1
+        iter += 1
       end
-      m.each do |ke ,el|
+      reservoir.each do |key ,value|
         j=0
-        while j < el.length
-          l[el[j]] = {'room' => el[j+1], 'group' => el[j+2], 'subject' => el[j+3]}
+        while j < value.length
+          tmp_storage[value[j]] = {:room => value[j+1], :group => value[j+2], :subject => value[j+3]}
           j+=4
+          reservoir[key] = tmp_storage
         end
       end
-      dict[k] = l
+      dict[k] = reservoir
     end
   end
 
@@ -79,11 +82,8 @@ class Parser_kafed < Parser
 
     if teacher_name
       hash = JSON["#{dict[teacher_name.split('+').join(' ')].to_json}"]
-      JSON.pretty_generate(hash)
     else
-      #hash = JSON["#{dict.to_json}"]
-      #JSON.pretty_generate(hash)
-      dict
+      hash = JSON["#{dict.to_json}"]
     end
   end
 end

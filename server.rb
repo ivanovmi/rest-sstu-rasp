@@ -4,6 +4,23 @@ require_relative 'parser_kafed'
 require 'json'
 require 'pp'
 
+
+class Hash
+  def to_utf8
+    Hash[
+      self.collect do |k, v|
+        if v.respond_to?(:to_utf8)
+          [ k, v.to_utf8 ]
+        elsif v.respond_to?(:encoding)
+          [ k, v.dup.encode('UTF-8') ]
+        else
+          [ k, v ]
+        end
+      end
+    ]
+  end
+end
+
 #========================================= SETTINGS SECTION ============================================================
 set :port, 1111
 
@@ -28,19 +45,20 @@ get '/aud=:aud' do |aud|
 end
 
 get '/kafedra=:kafedra' do |kafedra_name|
-  Parser_kafed.new.main(kafedra_name)
+  hash = Parser_kafed.new.main(kafedra_name)
+  JSON.pretty_generate(hash)
 end
 
 get '/kafedra=:kafedra/lector=:lector' do |kafedra_name, lector_name|
-  pp kafedra_name, lector_name
-  Parser_kafed.new.main(kafedra_name, lector_name)
+  hash = Parser_kafed.new.main(kafedra_name, lector_name)
+  JSON.pretty_generate(hash)
 end
 
 get '/hello-world.json' do
   content_type :json # Content-Type: application/json;charset=utf-8
 
   # Use to_json to generate JSON based on the Ruby hash
-  {   БлизниковаМП: {
+  hash = JSON[  {   БлизниковаМП: {
         odd: {
           q: {
             room: "1/432",
@@ -72,29 +90,30 @@ get '/hello-world.json' do
   }
   },
       non_odd: {
-      w: {
+      z: {
       room: "1/420",
       group: "б1-ИВЧТ11",
       subject: "Программирование"
   },
-      w: {
+      x: {
       room: "1/427",
       group: "б1-ИВЧТ31",
       subject: "Основы технологий семантического веба"
   },
-      w: {
+      d: {
       room: "1/420",
       group: "б1-ИВЧТ11",
       subject: "Программирование"
   },
-      w: {
+      s: {
       room: "1/427",
       group: "б1-ИВЧТ11",
       subject: "Программирование"
   }
   }
   },
-  }.to_json
+  }.to_json.dup.force_encoding('UTF-8')]
+  JSON.pretty_generate(hash)
 end
 
 get '/example.json' do
