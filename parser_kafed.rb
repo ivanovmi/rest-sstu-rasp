@@ -85,5 +85,6 @@ class Parser_kafed < Parser
     else
       hash = JSON["#{dict.to_json}"]
     end
+    JSON.pretty_generate(hash)
   end
 end

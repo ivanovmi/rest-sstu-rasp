@@ -23,7 +23,7 @@ class Parser
       dict
     else
       if not is_room
-        dict['lector'] = string.split(')')[1]
+        dict[:lector] = string.split(')')[1]
         subj_room = string.split(')')[0]<<')'
         room = subj_room[0..4]
         subj_room[0..4] = ''
@@ -41,10 +41,10 @@ class Parser
           room << subj[0]
           subj[0] = ''
         end
-        dict['subject'] = subj
-        dict['room'] = room
+        dict[:subject] = subj
+        dict[:room] = room
       else
-        dict['subject'] = string.split(')')[0]<<')'
+        dict[:subject] = string.split(')')[0]<<')'
         lector_group = string.split(')').length == 2 ? string.split(')')[1] : string.split(')')[1..string.length-1].join(')')
         group = lector_group.split('-')[1].insert(0,'-')
         string[string.length-group.length..-1] = ''
@@ -64,30 +64,38 @@ class Parser
           rev_string[0] = ''
         end
         lector = rev_string.join('').reverse
-        lector[0..dict['subject'].length-1] = ''
-        dict['group'] = group
-        dict['lector'] = lector
+        lector[0..dict[:subject].length-1] = ''
+        dict[:group] = group
+        dict[:lector] = lector
       end
       dict
     end
   end
 
+  def symbolize_keys(hash)
+    hash.inject({}){|result, (key, value)|
+      new_key = case key
+                  when String then key.to_sym
+                  else key
+                end
+      new_value = case value
+                    when Hash then symbolize_keys(value)
+                    else value
+                  end
+      result[new_key] = new_value
+      result
+    }
+  end
+
   def rasp_pars(page, is_aud=false)
     response = Hash.new
+    dict = Hash.new
     first_week = Hash.new
     second_week = Hash.new
     a = []
     week = {1 => 'monday', 2 => 'tuesday', 3 => 'wednesday', 4 => 'thursday', 5 => 'friday', 6 => 'saturday'}
     html = Nokogiri::HTML(page.body.force_encoding('UTF-8'))
-    rasp = html.css('div.text-center')[0]
-
-    if rasp.content.split("\r\n")[1].strip.split(' ')[0] == 'Нечётная'
-      first_week['odd'] = true
-      flag = true
-    else
-      first_week['odd'] = false
-      flag = false
-    end
+    week_check = html.css('div.text-center')[0]
 
     rasp = html.css('div.rasp-table-col')
     rasp.each do |div|
@@ -101,31 +109,29 @@ class Parser
       a.push(answer)
     end
 
-    a[0..5].each do |list|
-      dict = {}
-      for i in [0, 2, 4, 6]
-        dict[list[i]] = get_pairs(list[i+1], is_aud)
-      end
-      first_week[week[a.find_index(list)+1]] = dict
-    end
-
-    if flag
-      second_week['odd'] = false
+    if week_check.content.split("\r\n")[1].strip.split(' ')[0] == 'Нечётная'
+      odd_week = a[0..5]
+      non_odd_week = a[6..11]
     else
-      second_week['odd'] = true
-    end
-    index = 0
-    a[6..11].each do |list|
-      dict = {}
-      for i in [0, 2, 4, 6]
-        dict[list[i]] = get_pairs(list[i+1], is_aud)
-      end
-      second_week[week[index+1]] = dict
-      index +=1
+      non_odd_week = a[0..5]
+      odd_week = a[6..11]
     end
 
-    response['first'] = first_week
-    response['second'] = second_week
+    dict[:odd] = odd_week
+    dict[:non_odd] = non_odd_week
+
+    dict.each do |k, v|
+      storage = {}
+      v.each do |list|
+        reservoir = {}
+        for i in [0, 2, 4, 6]
+          reservoir[list[i]] = get_pairs(list[i+1], is_aud)
+        end
+        storage[week[v.find_index(list)+1]] = reservoir
+      end
+      dict[k] = storage
+    end
+    response = dict
 
     response.each do |w|
       w[1].each do |d|
@@ -134,14 +140,14 @@ class Parser
         end
       end
     end
+
     response
   end
 
   def group_pars(agent, page, name)
     group = name
     page = agent.page.link_with(:text => group).click
-    response = rasp_pars(page)
-    response
+    rasp_pars(page)
   end
 
   def lector_pars(agent, page, name)
@@ -155,8 +161,7 @@ class Parser
     fio.push(io.join(''))
     lector = fio.join(' ')
     page = agent.page.link_with(:text => lector).click
-    response = rasp_pars(page)
-    response
+    rasp_pars(page)
   end
 
   def room_pars(agent, page, name)
@@ -198,8 +203,7 @@ class Parser
       end
     end
 
-    response = rasp_pars(page, is_aud=true)
-    response
+    rasp_pars(page, is_aud=true)
   end
 
   def main(name, group=false, lector=false, auditory=false, kafedra=false)
@@ -215,6 +219,8 @@ class Parser
       response = room_pars(agent, page, name)
     #elsif kafedra
     #  response = Parser_kafed.new.main(name)
+    else
+      response = {}
     end
     hash = JSON["#{response.to_json}"]
     JSON.pretty_generate(hash)
