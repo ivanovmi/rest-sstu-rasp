@@ -37,7 +37,7 @@ get '/kafedra=:kafedra/lector=:lector' do |kafedra_name, lector_name|
   Parser_kafed.new.main(kafedra_name, lector_name)
 end
 
-error 400..510 do
+error 400..505 do
   hash = {}
   body hash.to_json
 end

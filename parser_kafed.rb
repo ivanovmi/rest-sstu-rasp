@@ -21,7 +21,7 @@ class Parser_kafed < Parser
     else
       if odd.nil?
         non_odd_week=a[1..a.length-1]
-        odd = []
+        odd_week = []
       elsif non_odd.nil?
         odd_week=a[1..a.length-1]
         non_odd_week = []
@@ -37,6 +37,23 @@ class Parser_kafed < Parser
       storage = []
       reservoir = {}
       tmp_storage = {}
+      v.each do |element|
+        
+        if element.include? '.' and not element.include? ' '
+          name = element
+          reservoir[element] = []
+          start = true
+          #break
+        if start
+          reservoir[name].push(element)
+          #start = false
+        end
+        pp reservoir
+        end
+      end
+
+      #pp v, '-----------'
+=begin
       while iter < v.length
         if v[iter].length==7 and v[iter].include?'.'
           reservoir[week[v[iter][0..1].to_sym]] = storage
@@ -53,6 +70,7 @@ class Parser_kafed < Parser
           reservoir[key] = tmp_storage
         end
       end
+=end
       dict[k] = reservoir
     end
   end
@@ -104,6 +122,9 @@ class Parser_kafed < Parser
     else
       hash = JSON["#{dict.to_json}"]
     end
-    JSON.pretty_generate(hash)
+ #   JSON.pretty_generate(hash)
   end
 end
+
+Parser_kafed.new.main('АЭУ', 'Алексеев+ВС')
+#pp Parser_kafed.new.main('АЭУ', 'Алексеев+ВС')
