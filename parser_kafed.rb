@@ -10,13 +10,24 @@ class Parser_kafed < Parser
     odd = a.index('Нечётная')
     non_odd = a.index('Чётная')
 
-    if odd > non_odd
-      non_odd_week=a[1..odd-1]
-      odd_week=a[odd+1..a.length-1]
-    elsif non_odd > odd
-      odd_week=a[1..non_odd-1]
-      non_odd_week=a[non_odd+1..a.length-1]
+    if not odd.nil? and not non_odd.nil?
+      if odd > non_odd
+        non_odd_week=a[1..odd-1]
+        odd_week=a[odd+1..a.length-1]
+      elsif non_odd > odd
+        odd_week=a[1..non_odd-1]
+        non_odd_week=a[non_odd+1..a.length-1]
+      end
+    else
+      if odd.nil?
+        non_odd_week=a[1..a.length-1]
+        odd = []
+      elsif non_odd.nil?
+        odd_week=a[1..a.length-1]
+        non_odd_week = []
+      end
     end
+
 
     dict[:odd]=odd_week
     dict[:non_odd]=non_odd_week
@@ -66,8 +77,16 @@ class Parser_kafed < Parser
         b.push(i.strip)
       end
       b = b.reject {|c| c.empty?}
-      b.slice!(b.index('Чётная')+1..b.index('Чётная')+5)
-      b.slice!(b.index('Нечётная')+1..b.index('Нечётная')+5)
+
+      if b.index('Чётная').nil?
+        b.slice!(b.index('Нечётная')+1..b.index('Нечётная')+5)
+      elsif b.index('Нечётная').nil?
+        b.slice!(b.index('Чётная')+1..b.index('Чётная')+5)
+      else
+        b.slice!(b.index('Чётная')+1..b.index('Чётная')+5)
+        b.slice!(b.index('Нечётная')+1..b.index('Нечётная')+5)
+      end
+
       panels_list.push(b)
     end
     i = 0
