@@ -3,6 +3,17 @@ require 'nokogiri'
 require 'mechanize'
 
 class Parser_kafed < Parser
+
+  def get_pairs(array)
+    iter = 0
+    dict = Hash.new
+    while iter < array.length
+      dict[array[iter]] = {:room => array[iter+1], :group => array[iter+2], :subject => array[iter+3]}
+      iter += 4
+    end
+    dict
+  end
+
   def parser(a)
     dict = {}
     odd_week = nil
@@ -33,7 +44,6 @@ class Parser_kafed < Parser
     dict[:non_odd]=non_odd_week
 
     dict.each do |k,v|
-      iter = 0
       storage = []
       tmp_storage = []
       reservoir = {}
@@ -51,14 +61,13 @@ class Parser_kafed < Parser
         end
       end
 
-      tmp_storage.each do |tmp|
-        pp tmp, '-----------------------'
+      tmp_storage.each do |element|
+        reservoir[week[element[0][0..1].to_sym]] = get_pairs(element[1..element.length])
       end
-      #dict[k] = tmp_storage
-      pp '==================================='
+
+      dict[k] = reservoir
     end
 
-    #pp dict
   end
 
   def main(name, teacher_name=nil)
@@ -102,16 +111,12 @@ class Parser_kafed < Parser
     dict.each do |k, v|
       dict[k] = parser(v)
     end
-    #pp dict
 
     if teacher_name
       hash = JSON["#{dict[teacher_name.split('+').join(' ')].to_json}"]
     else
       hash = JSON["#{dict.to_json}"]
     end
- #   JSON.pretty_generate(hash)
+    JSON.pretty_generate(hash)
   end
 end
-
-Parser_kafed.new.main('АЭУ', 'Алексеев+ВС')
-#pp Parser_kafed.new.main('АЭУ', 'Алексеев+ВС')
