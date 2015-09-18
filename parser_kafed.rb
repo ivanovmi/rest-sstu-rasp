@@ -7,6 +7,7 @@ class Parser_kafed < Parser
     dict = {}
     odd_week = nil
     non_odd_week = nil
+    week = {:Пн => 'monday', :Вт => 'tuesday', :Ср => 'wednesday', :Чт => 'thursday', :Пт => 'friday', :Сб => 'saturday'}
     odd = a.index('Нечётная')
     non_odd = a.index('Чётная')
 
@@ -28,51 +29,36 @@ class Parser_kafed < Parser
       end
     end
 
-
     dict[:odd]=odd_week
     dict[:non_odd]=non_odd_week
-    week = {:Пн => 'monday', :Вт => 'tuesday', :Ср => 'wednesday', :Чт => 'thursday', :Пт => 'friday', :Сб => 'saturday'}
+
     dict.each do |k,v|
       iter = 0
       storage = []
+      tmp_storage = []
       reservoir = {}
-      tmp_storage = {}
+
       v.each do |element|
-        
         if element.include? '.' and not element.include? ' '
-          name = element
-          reservoir[element] = []
-          start = true
-          #break
-        if start
-          reservoir[name].push(element)
-          #start = false
+          storage.push(v.index(element))
         end
-        pp reservoir
+      end
+      storage.each_index do |i|
+        if storage[i+1].nil?
+          tmp_storage.push(v[storage[i]..a.length-1])
+        else
+          tmp_storage.push(v[storage[i]..storage[i+1]-1])
         end
       end
 
-      #pp v, '-----------'
-=begin
-      while iter < v.length
-        if v[iter].length==7 and v[iter].include?'.'
-          reservoir[week[v[iter][0..1].to_sym]] = storage
-        else
-          storage.push(v[iter])
-        end
-        iter += 1
+      tmp_storage.each do |tmp|
+        pp tmp, '-----------------------'
       end
-      reservoir.each do |key ,value|
-        j=0
-        while j < value.length
-          tmp_storage[value[j]] = {:room => value[j+1], :group => value[j+2], :subject => value[j+3]}
-          j+=4
-          reservoir[key] = tmp_storage
-        end
-      end
-=end
-      dict[k] = reservoir
+      #dict[k] = tmp_storage
+      pp '==================================='
     end
+
+    #pp dict
   end
 
   def main(name, teacher_name=nil)
@@ -116,6 +102,7 @@ class Parser_kafed < Parser
     dict.each do |k, v|
       dict[k] = parser(v)
     end
+    #pp dict
 
     if teacher_name
       hash = JSON["#{dict[teacher_name.split('+').join(' ')].to_json}"]
