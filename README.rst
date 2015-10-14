@@ -45,7 +45,7 @@ Examples of requests
 |(HTTPS)              |started   |
 +---------------------+----------+
 |API Key              |Not       |
-|authorizaiton        |Started   |
+|authorization        |Started   |
 +---------------------+----------+
 
 
