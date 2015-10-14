@@ -113,10 +113,9 @@ class Parser_kafed < Parser
     end
 
     if teacher_name
-      hash = JSON["#{dict[teacher_name.split('+').join(' ')].to_json}"]
+      dict[teacher_name.split('+').join(' ')]
     else
-      hash = JSON["#{dict.to_json}"]
+      dict
     end
-    JSON.pretty_generate(hash)
   end
 end

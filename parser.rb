@@ -202,12 +202,9 @@ class Parser
     elsif auditory
       page = agent.get('http://rasp.sstu.ru/aud')
       response = room_pars(agent, page, name)
-    #elsif kafedra
-    #  response = Parser_kafed.new.main(name)
     else
       response = {}
     end
-    hash = JSON["#{response.to_json}"]
-    JSON.pretty_generate(hash)
+    response
   end
 end
