@@ -38,15 +38,15 @@ Examples of requests
 
 
 
-+---------------------+----------+
-|**What I try to add**|**Status**|
-+---------------------+----------+
-|Secure connection    |Not       |
-|(HTTPS)              |started   |
-+---------------------+----------+
-|API Key              |Not       |
-|authorization        |Started   |
-+---------------------+----------+
++---------------------+-----------+
+|**What I try to add**|**Status** |
++---------------------+-----------+
+|Secure connection    |Temporarily|
+|(HTTPS)              |unavailable|
++---------------------+-----------+
+|API Key              |Not        |
+|authorization        |Started    |
++---------------------+-----------+
 
 
 
