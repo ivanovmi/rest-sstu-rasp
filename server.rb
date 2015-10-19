@@ -7,7 +7,16 @@ require 'pp'
 
 #========================================= SETTINGS SECTION ============================================================
 # Start application on custom port
-set :port, 1111
+if /[\D]+/.match(ARGV[0])
+  set :port, 1111
+else
+  if not ARGV[0].nil?
+      set :port, ARGV[0].to_i
+  else
+      set :port, 1111
+    end
+  end
+
 # Set content-type for json
 set :json_content_type, :js
 

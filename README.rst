@@ -4,8 +4,6 @@ Rest server for SSTU schedule
 
 This ruby application implement rest API for Saratov State Technical University (SSTU) schedule_
 
-TODO: Fix magister representation!
-
 
 *********************
 Implemented functions
