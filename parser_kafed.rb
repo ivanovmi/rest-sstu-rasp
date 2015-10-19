@@ -49,10 +49,11 @@ class Parser_kafed < Parser
       reservoir = {}
 
       v.each do |element|
-        if element.include? '.' and not element.include? ' '
+        if element.include? '.' and not element.include? ' ' and /[\d]+/.match(element)
           storage.push(v.index(element))
         end
       end
+
       storage.each_index do |i|
         if storage[i+1].nil?
           tmp_storage.push(v[storage[i]..a.length-1])
