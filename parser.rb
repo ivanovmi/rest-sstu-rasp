@@ -109,9 +109,8 @@ class Parser
       storage = {}
       v.each do |list|
         reservoir = {}
-        for i in [0, 2, 4, 6]
-          reservoir[list[i]] = get_pairs(list[i+1], is_aud)
-        end
+        range = 0..list.length
+        range.step(2){|i| reservoir[list[i]] = get_pairs(list[i+1], is_aud)}
         storage[week[v.find_index(list)+1]] = reservoir
       end
       dict[k] = storage
