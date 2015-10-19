@@ -17,6 +17,7 @@ else
     end
   end
 
+set :bind, '0.0.0.0'
 # Set content-type for json
 set :json_content_type, :js
 
