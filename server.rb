@@ -8,12 +8,12 @@ require 'pp'
 #========================================= SETTINGS SECTION ============================================================
 # Start application on custom port
 if /[\D]+/.match(ARGV[0])
-  set :port, 1111
+  set :port, 4567
 else
   if not ARGV[0].nil?
       set :port, ARGV[0].to_i
   else
-      set :port, 1111
+      set :port, 4567
     end
   end
 
