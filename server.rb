@@ -27,24 +27,24 @@ disable :raise_errors
 #============================================END SETTINGS===============================================================
 
 get '/group=:group' do |group_name|
-  json Parser.new.main(group_name, group=true, lector=false, auditory=false, kafedra=false)
+  json Parser.new.main(group_name.force_encoding("UTF-8"), group=true, lector=false, auditory=false, kafedra=false)
 end
 
 get '/lector=:lector' do |lector_name|
-  n = lector_name.split('+').join(' ')
+  n = lector_name.force_encoding("UTF-8").split('+').join(' ')
   json Parser.new.main(n, group=false, lector=true, auditory=false, kafedra=false)
 end
 
 get '/aud=:aud' do |aud|
-  json Parser.new.main(aud.to_s.split('+').join('/'), group=false, lector=false, auditory=true, kafedra=false)
+  json Parser.new.main(aud.force_encoding("UTF-8").to_s.split('+').join('/'), group=false, lector=false, auditory=true, kafedra=false)
 end
 
 get '/kafedra=:kafedra' do |kafedra_name|
-  json Parser_kafed.new.main(kafedra_name)
+  json Parser_kafed.new.main(kafedra_name.force_encoding("UTF-8"))
 end
 
 get '/kafedra=:kafedra/lector=:lector' do |kafedra_name, lector_name|
-  json Parser_kafed.new.main(kafedra_name, lector_name)
+  json Parser_kafed.new.main(kafedra_name.force_encoding("UTF-8"), lector_name.force_encoding("UTF-8"))
 end
 
 error 400..505 do
